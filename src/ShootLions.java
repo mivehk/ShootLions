@@ -4,36 +4,40 @@ import java.awt.event.*;
 //import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO; // For reading images
+import java.awt.Image;       // For handling images
+import java.io.File;
+import java.io.IOException;
+
+class GameFrame extends JFrame {
+    public GameFrame() {
+        this.setTitle("ShootLions");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
+
+        GamePanel gamePanel = new GamePanel();
+        this.add(gamePanel);
+
+        // Restart Button
+        JButton restartButton = new JButton("Restart The Game");
+        restartButton.setFocusable(false);
+        restartButton.setVisible(false);
+        restartButton.addActionListener(e -> gamePanel.restartGame());
+        this.add(restartButton, BorderLayout.SOUTH);
+
+        gamePanel.setRestartButton(restartButton);
+
+        this.pack();
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+    }
+}
 
 public class ShootLions {
     public static void main(String[] args) {
         //GameFrame frame = new GameFrame();
         SwingUtilities.invokeLater(GameFrame::new);
     }
-}
-
-class GameFrame extends JFrame {
-        public GameFrame() {
-            this.setTitle("Shoot Lions");
-            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            this.setResizable(false);
-
-            GamePanel gamePanel = new GamePanel();
-            this.add(gamePanel);
-
-            // Restart Button
-            JButton restartButton = new JButton("Restart The Game");
-            restartButton.setFocusable(false);
-            restartButton.setVisible(false);
-            restartButton.addActionListener(e -> gamePanel.restartGame());
-            this.add(restartButton, BorderLayout.SOUTH);
-
-            gamePanel.setRestartButton(restartButton);
-
-            this.pack();
-            this.setLocationRelativeTo(null);
-            this.setVisible(true);
-        }
 }
 
 class GamePanel extends JPanel implements ActionListener, KeyListener {
@@ -226,12 +230,27 @@ class Bullet {
     }
 }
 
+
+
 class Lion {
     private int x, y;
     private int speed = 3;
     private boolean defeated = false;
+    private static Image lionImage;
+
+    static {
+        try {
+            lionImage = ImageIO.read(new File("./Lion.png"));
+            //lionImage = ImageIO.read(getClass().getResource("/Lion2.png"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public Lion() {
+
+
         if (Math.random() < 0.5) {
             x = (Math.random() < 0.5) ? 0 : 800; // Left or right
             y = (int) (Math.random() * 600);    // Random Y
@@ -271,9 +290,13 @@ class Lion {
     }
 
     public void draw(Graphics g) {
-        if (!defeated) {
-            g.setColor(Color.ORANGE);
-            g.fillRect(x - 25, y - 25, 50, 50);
+        //Graphics2D g2d2 = (Graphics2D) g;
+
+        if (!defeated && lionImage != null) {
+            //g.setColor(Color.ORANGE);
+            //g.fillRect(x - 25, y - 25, 50, 50);
+            // Draw the image centered at (x, y)
+            g.drawImage(lionImage, x-lionImage.getWidth(null) / 2, y-lionImage.getHeight(null) / 2, null);
         }
     }
 }
