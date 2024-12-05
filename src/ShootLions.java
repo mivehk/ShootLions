@@ -5,9 +5,17 @@ import java.awt.event.*;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO; // For reading images
-import java.awt.Image;       // For handling images
+//import java.awt.Image;       // For handling images
 import java.io.File;
 import java.io.IOException;
+
+
+public class ShootLions {
+    public static void main(String[] args) {
+        //GameFrame frame = new GameFrame();
+        SwingUtilities.invokeLater(GameFrame::new);
+    }
+}
 
 class GameFrame extends JFrame {
     public GameFrame() {
@@ -33,39 +41,37 @@ class GameFrame extends JFrame {
     }
 }
 
-public class ShootLions {
-    public static void main(String[] args) {
-        //GameFrame frame = new GameFrame();
-        SwingUtilities.invokeLater(GameFrame::new);
-    }
-}
-
 class GamePanel extends JPanel implements ActionListener, KeyListener {
-        private Timer timer;
-        private Player player;
-        private ArrayList<Lion> lions;
-        private ArrayList<Bullet> bullets;
-        private int score = 0;
-        private boolean gameOver = false;
-        private JButton restartButton;
+    private Timer timer;
+    private Player player;
+    private ArrayList<Lion> lions;
+    private ArrayList<Bullet> bullets;
+    private int score = 0;
+    private boolean gameOver = false;
+    private JButton restartButton;
+    private int panelWidth = 800;
+    private int panelHeight = 600;
 
-        public GamePanel() {
-            this.setPreferredSize(new Dimension(800, 600));
+    public GamePanel() {
+            this.setPreferredSize(new Dimension(panelWidth, panelHeight));
             this.setBackground(Color.GREEN);
             this.setFocusable(true);
             this.addKeyListener(this);
 
-            player = new Player(400, 300); // Tree position
+            int pX = panelWidth / 2;
+            int pY = panelHeight / 2;
+
+            player = new Player(pX, pY); // Player's position is at the center of the Panel
             lions = new ArrayList<>();
             bullets = new ArrayList<>();
 
             // Spawn lions at regular intervals
-            Timer lionSpawner = new Timer(2000, e -> {
-                if (!gameOver) lions.add(new Lion());
+            Timer lionSpawner = new Timer(3000, e -> {
+                if (!gameOver) lions.add(new Lion(panelWidth, panelHeight));
             });
             lionSpawner.start();
 
-            timer = new Timer(16, this); // 60 FPS
+            timer = new Timer(16, this); // 16 is time for rendering a single frame,so FPS is 1000/16(ms) = 60 FPS
             timer.start();
         }
 
@@ -79,14 +85,13 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
         lions.clear();
         bullets.clear();
         restartButton.setVisible(false);
-        requestFocusInWindow(); // Refocus the panel for key inputs
+        requestFocusInWindow(); // GamePanel constructor is set Focusable, Refocus the panel for key inputs
     }
 
-
     @Override
-        public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
             if(gameOver) {
-                restartButton.setVisible(true); // Make the button visible when the game ends
+                restartButton.setVisible(true); // Make the button visible when the game is over.
                 return;
             }
             // Update game state
@@ -103,21 +108,24 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
                 }
             }
 
-            // Collision detection and removing off-screen objects
+            // Collision detection and removing Collections off-screen objects
             bullets.removeIf(bullet -> !bullet.isOnScreen());
             lions.removeIf(Lion::isDefeated );
             repaint();
         }
 
-        @Override
-        public void paintComponent(Graphics g) {
+    @Override
+    public void paintComponent(Graphics g) {
             super.paintComponent(g);
+
+            int pX = panelWidth / 2; //Using class properties instead of constant numbers e.g., 300
+            int pY = panelHeight / 2;
 
             if (gameOver) {
                 g.setColor(Color.RED);
                 g.setFont(new Font("Times New Roman", Font.BOLD, 40));
-                g.drawString("Game Over", 300, 250);
-                g.drawString("Score: " + score, 330, 300);
+                g.drawString("Game Over", pX-60, pY -50);
+                g.drawString("Score: " + score, pX-60, pY);
             } else {
                 player.draw(g);
                 for (Lion lion : lions) lion.draw(g);
@@ -130,32 +138,33 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
             }
         }
 
-        @Override
-        public void keyPressed(KeyEvent e) {
+    @Override
+    public void keyPressed(KeyEvent e) {
             player.keyPressed(e);
         }
 
-        @Override
-        public void keyReleased(KeyEvent e) {
+    @Override
+    public void keyReleased(KeyEvent e) {
             player.keyReleased(e);
         }
 
-        @Override
-        public void keyTyped(KeyEvent e) {}
-    }
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+}
 
 class Player {
-        private int x, y, angle;
-        private boolean shooting;
-        private int shootCooldown = 0;
+    private int x, y, angle;
+    private boolean shooting;
+    private int shootCooldown = 0;
 
-        public Player(int x, int y) {
+    public Player(int x, int y) {
             this.x = x;
             this.y = y;
             this.angle = 0;
         }
 
-        public void update(ArrayList<Bullet> bullets) {
+    public void update(ArrayList<Bullet> bullets) {
             if (shooting && shootCooldown == 0) {
                 bullets.add(new Bullet(x, y, angle));
                 shootCooldown = 20; // Cooldown between shots
@@ -163,7 +172,7 @@ class Player {
             if (shootCooldown > 0) shootCooldown--;
         }
 
-        public void draw(Graphics g) {
+    public void draw(Graphics g) {
 
             Graphics2D g2d = (Graphics2D) g; //casting Graphics2D inside of graphics as g
             g2d.setColor(Color.BLUE);
@@ -181,24 +190,24 @@ class Player {
             g2d.translate(-x, -y);
         }
 
-        public void shoot() {
+    public void shoot() {
             // Add bullet logic here
         }
 
-        public void keyPressed(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_LEFT) angle -= 10;
             if (e.getKeyCode() == KeyEvent.VK_RIGHT) angle += 10;
             if (e.getKeyCode() == KeyEvent.VK_SPACE) shooting = true;
         }
 
-        public void keyReleased(KeyEvent e) {
+    public void keyReleased(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) shooting = false;
         }
 
-        public Rectangle getBounds() {
+    public Rectangle getBounds() {
             return new Rectangle(x - 20, y - 20, 40, 40);
         }
-    }
+}
 
 class Bullet {
     private int x, y;
@@ -230,13 +239,13 @@ class Bullet {
     }
 }
 
-
-
 class Lion {
     private int x, y;
     private int speed = 3;
     private boolean defeated = false;
     private static Image lionImage;
+    private int pX;
+    private int pY;
 
     static {
         try {
@@ -248,21 +257,22 @@ class Lion {
         }
     }
 
-    public Lion() {
-
+    public Lion(int panelWidth, int panelHeight) {
+        this.pX = panelWidth / 2;
+        this.pY = panelHeight / 2;
 
         if (Math.random() < 0.5) {
-            x = (Math.random() < 0.5) ? 0 : 800; // Left or right
+            x = (Math.random() < 0.5) ? 0 : panelWidth; // Left or right
             y = (int) (Math.random() * 600);    // Random Y
         } else {
-            y = (Math.random() < 0.5) ? 0 : 600; // Top or bottom
+            y = (Math.random() < 0.5) ? 0 : panelHeight; // Top or bottom
             x = (int) (Math.random() * 800);    // Random X
         }
     }
 
     public void update() {
         if (!defeated) {
-            int targetX = 400, targetY = 300; // Player's position
+            int targetX = pX, targetY = pY; // Player's position
             double angle = Math.atan2(targetY - y, targetX - x);
             x += (int) (speed * Math.cos(angle));
             y += (int) (speed * Math.sin(angle));
