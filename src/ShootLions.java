@@ -26,17 +26,19 @@ class GameFrame extends JFrame {
         GamePanel gamePanel = new GamePanel();
         this.add(gamePanel);
 
-        // Restart Button
+        // Restart Button, which GamePanel's setter method will use this for its own restartButton
         JButton restartButton = new JButton("Restart The Game");
         restartButton.setFocusable(false);
         restartButton.setVisible(false);
         restartButton.addActionListener(e -> gamePanel.restartGame());
         this.add(restartButton, BorderLayout.SOUTH);
+        //this.add(restartButton);
 
         gamePanel.setRestartButton(restartButton);
 
-        this.pack();
-        this.setLocationRelativeTo(null);
+        this.pack(); // Swing will automatically fit components jButton+jPanel inside of the JFrame
+        //this.setSize(800,700);
+        this.setLocationRelativeTo(null); //Frame is centered on the screen
         this.setVisible(true);
     }
 }
@@ -95,23 +97,23 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
                 return;
             }
             // Update game state
-            player.update(bullets);
-            for (Lion lion : lions) lion.update();
-            for (Bullet bullet : bullets) bullet.update();
+            player.shoot(bullets);
+            for (Lion lion : lions) lion.run();
+            for (Bullet bullet : bullets) bullet.whizz();
 
             for (Lion lion : lions) {
-                if (lion.isHit(bullets)) {
+                if (lion.isHunted(bullets)) {
                     score += 10;
-                } else if (lion.reachesPlayer(player)) {
+                } else if (lion.huntPlayer(player)) {
                     gameOver = true;
                     restartButton.setVisible(true);
                 }
             }
 
             // Collision detection and removing Collections off-screen objects
-            bullets.removeIf(bullet -> !bullet.isOnScreen());
-            lions.removeIf(Lion::isDefeated );
-            repaint();
+            bullets.removeIf(bullet -> !bullet.isBulletOnScreen());
+            lions.removeIf(Lion::isLionOffScreen);
+            repaint(); //send a request to paintComponent to redraw gamePanel
         }
 
     @Override
@@ -164,7 +166,7 @@ class Player {
             this.angle = 0;
         }
 
-    public void update(ArrayList<Bullet> bullets) {
+    public void shoot(ArrayList<Bullet> bullets) {
             if (shooting && shootCooldown == 0) {
                 bullets.add(new Bullet(x, y, angle));
                 shootCooldown = 20; // Cooldown between shots
@@ -190,9 +192,6 @@ class Player {
             g2d.translate(-x, -y);
         }
 
-    public void shoot() {
-            // Add bullet logic here
-        }
 
     public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_LEFT) angle -= 10;
@@ -211,21 +210,21 @@ class Player {
 
 class Bullet {
     private int x, y;
-    private double angle;
+    private double angle; //status of bullet is saved as double to take radians for sin,cos of whizz
     private int speed = 10;
 
     public Bullet(int x, int y, int angle) {
         this.x = x;
         this.y = y;
-        this.angle = Math.toRadians(angle);
+        this.angle = Math.toRadians(angle); //converts int to double for radians
     }
 
-    public void update() {
+    public void whizz() {
         x += speed * Math.cos(angle);
         y += speed * Math.sin(angle);
     }
 
-    public boolean isOnScreen() {
+    public boolean isBulletOnScreen() {
         return x >= 0 && x <= 800 && y >= 0 && y <= 600;
     }
 
@@ -242,7 +241,7 @@ class Bullet {
 class Lion {
     private int x, y;
     private int speed = 3;
-    private boolean defeated = false;
+    private boolean hunted = false;
     private static Image lionImage;
     private int pX;
     private int pY;
@@ -270,20 +269,20 @@ class Lion {
         }
     }
 
-    public void update() {
-        if (!defeated) {
+    public void run() {
+        if (!hunted) {
             int targetX = pX, targetY = pY; // Player's position
-            double angle = Math.atan2(targetY - y, targetX - x);
+            double angle = Math.atan2(targetY - y, targetX - x); //lion local angle variable is also saved as double to work with Math methods
             x += (int) (speed * Math.cos(angle));
             y += (int) (speed * Math.sin(angle));
         }
     }
 
-    public boolean isHit(ArrayList<Bullet> bullets) {
+    public boolean isHunted(ArrayList<Bullet> bullets) {
         Rectangle bounds = new Rectangle(x - 25, y - 25, 50, 50);
         for (Bullet bullet : bullets) {
             if (bounds.intersects(bullet.getBounds())) {
-                defeated = true;
+                hunted = true;
                 bullets.remove(bullet);
                 return true;
             }
@@ -291,18 +290,18 @@ class Lion {
         return false;
     }
 
-    public boolean reachesPlayer(Player player) {
-        return !defeated && new Rectangle(x - 25, y - 25, 50, 50).intersects(player.getBounds());
+    public boolean huntPlayer(Player player) {
+        return !hunted && new Rectangle(x - 25, y - 25, 50, 50).intersects(player.getBounds());
     }
 
-    public boolean isDefeated() {
-        return defeated || (x < 0 || x > 800 || y < 0 || y > 600);
+    public boolean isLionOffScreen() {
+        return hunted || (x < 0 || x > 800 || y < 0 || y > 600);
     }
 
     public void draw(Graphics g) {
         //Graphics2D g2d2 = (Graphics2D) g;
 
-        if (!defeated && lionImage != null) {
+        if (!hunted && lionImage != null) {
             //g.setColor(Color.ORANGE);
             //g.fillRect(x - 25, y - 25, 50, 50);
             // Draw the image centered at (x, y)
