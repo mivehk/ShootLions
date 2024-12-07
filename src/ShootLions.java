@@ -5,7 +5,7 @@ import java.awt.event.*;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO; // For reading images
-//import java.awt.Image;       // For handling images
+import java.awt.Image;       // For handling images
 import java.io.File;
 import java.io.IOException;
 
@@ -279,7 +279,7 @@ class Lion {
     }
 
     public boolean isHunted(ArrayList<Bullet> bullets) {
-        Rectangle bounds = new Rectangle(x - 25, y - 25, 50, 50);
+        Rectangle bounds = new Rectangle(x - 25, y - 30, 50, 60); //png is 54X60 pixels, and these bounds are estimated for collision detection
         for (Bullet bullet : bullets) {
             if (bounds.intersects(bullet.getBounds())) {
                 hunted = true;
@@ -291,7 +291,7 @@ class Lion {
     }
 
     public boolean huntPlayer(Player player) {
-        return !hunted && new Rectangle(x - 25, y - 25, 50, 50).intersects(player.getBounds());
+        return !hunted && new Rectangle(x - 25, y - 30, 50, 60).intersects(player.getBounds());
     }
 
     public boolean isLionOffScreen() {
@@ -304,7 +304,7 @@ class Lion {
         if (!hunted && lionImage != null) {
             //g.setColor(Color.ORANGE);
             //g.fillRect(x - 25, y - 25, 50, 50);
-            // Draw the image centered at (x, y)
+            // Draw the image centered at (x, y) taking the width and height of the lion png
             g.drawImage(lionImage, x-lionImage.getWidth(null) / 2, y-lionImage.getHeight(null) / 2, null);
         }
     }
