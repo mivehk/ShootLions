@@ -10,10 +10,14 @@ import java.io.File;
 import java.io.IOException;
 
 
+
 public class ShootLions {
     public static void main(String[] args) {
-        //GameFrame frame = new GameFrame();
-        SwingUtilities.invokeLater(GameFrame::new);
+        SwingUtilities.invokeLater(() -> {
+            GameFrame frame1 = new GameFrame();
+            frame1.setVisible(true);
+        });
+        //SwingUtilities.invokeLater(GameFrame::new);
     }
 }
 
@@ -112,7 +116,8 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
 
             // Collision detection and removing Collections off-screen objects
             bullets.removeIf(bullet -> !bullet.isBulletOnScreen());
-            lions.removeIf(Lion::isLionOffScreen);
+            //lions.removeIf(Lion::isLionOffScreen); //method reference can map predicate directly to the method
+            lions.removeIf(lion -> lion.isLionOffScreen()); //similarly, lambda function could be used  as predicate for removeIf
             repaint(); //send a request to paintComponent to redraw gamePanel
         }
 
