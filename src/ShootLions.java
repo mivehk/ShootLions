@@ -9,6 +9,15 @@ import java.awt.Image;       // For handling images
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * This 2D game was adopted from a scene in the TV Show 1923
+ *  Two characters were on top of a tree and defending themselves against hungry lions
+ *  game uses keyboard arrow keys to rotate the character clockwise(VK-right) and counter-clockwise(VK-left)
+ *  VK-space is used for shooting bullets to lions, which randomly appear on the panel from different angles
+ *  @author Kayvan Mivehnejad
+ *  @version 1.3
+ *  @since 2024
+ */
 
 
 public class ShootLions {
@@ -123,7 +132,7 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void paintComponent(Graphics g) {
-            super.paintComponent(g);
+            super.paintComponent(g); //tells java to apply default jFrame paint on g
 
             int pX = panelWidth / 2; //Using class properties instead of constant numbers e.g., 300
             int pY = panelHeight / 2;
