@@ -1,21 +1,23 @@
-import javax.swing.*;
+import javax.swing.*; //there are two Timer classes in java, one within this package and another one in java.awt.*
 import java.awt.*;
 import java.awt.event.*;
 //import java.awt.event.KeyEvent;
-import java.util.ArrayList;
+import java.util.*;
 
 import javax.imageio.ImageIO; // For reading images
 import java.awt.Image;       // For handling images
 import java.io.File;
 import java.io.IOException;
+import java.awt.geom.AffineTransform;
+import java.awt.Toolkit;
 
 /**
- * This 2D game was adopted from a scene in the TV Show 1923
- *  Two characters were on top of a tree and defending themselves against hungry lions
- *  game uses keyboard arrow keys to rotate the character clockwise(VK-right) and counter-clockwise(VK-left)
- *  VK-space is used for shooting bullets to lions, which randomly appear on the panel from different angles
+ * This 2D game was inspired after watching a scene in the Paramount-Plus Series "1923"
+ *  Two characters were trapped on top of a tree and had to defend themselves against hungry lions
+ *  This game uses keyboard arrow keys to rotate the character toward lions in clockwise(VK-right) and counter-clockwise(VK-left) directions.
+ *  Space key is used for shooting lions, which randomly appear on the panel from different angles
  *  @author Kayvan Mivehnejad
- *  @version 1.3
+ *  @version 2.0
  *  @since 2024
  */
 
@@ -36,18 +38,21 @@ class GameFrame extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
 
-        GamePanel gamePanel = new GamePanel();
+        Dimension MonitorSize = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setSize(MonitorSize);
+
+        GamePanel gamePanel = new GamePanel(MonitorSize.width, MonitorSize.height);
         this.add(gamePanel);
 
         // Restart Button, which GamePanel's setter method will use this for its own restartButton
-        JButton restartButton = new JButton("Restart The Game");
-        restartButton.setFocusable(false);
-        restartButton.setVisible(false);
-        restartButton.addActionListener(e -> gamePanel.restartGame());
-        this.add(restartButton, BorderLayout.SOUTH);
-        //this.add(restartButton);
+        //JButton restartButton = new JButton("Restart The Game");
+        //restartButton.setFocusable(false);
+        //restartButton.setVisible(false);
+        //restartButton.addActionListener(e -> gamePanel.restartGame());
+        //this.add(restartButton, BorderLayout.SOUTH);
 
-        gamePanel.setRestartButton(restartButton);
+
+        //gamePanel.setRestartButton(restartButton);
 
         this.pack(); // Swing will automatically fit components jButton+jPanel inside of the JFrame
         //this.setSize(800,700);
@@ -57,58 +62,61 @@ class GameFrame extends JFrame {
 }
 
 class GamePanel extends JPanel implements ActionListener, KeyListener {
-    private Timer timer;
+    private javax.swing.Timer timer;
     private Player player;
     private ArrayList<Lion> lions;
     private ArrayList<Bullet> bullets;
     private int score = 0;
     private boolean gameOver = false;
     private JButton restartButton;
-    private int panelWidth = 800;
-    private int panelHeight = 600;
+    private int panelWidth ;
+    private int panelHeight ;
 
-    public GamePanel() {
-            this.setPreferredSize(new Dimension(panelWidth, panelHeight));
-            this.setBackground(Color.GREEN);
-            this.setFocusable(true);
-            this.addKeyListener(this);
+    public GamePanel(int Width, int Height) {
 
-            int pX = panelWidth / 2;
-            int pY = panelHeight / 2;
+        this.panelWidth = Width;
+        this.panelHeight = Height;
+        this.setPreferredSize(new Dimension(panelWidth, panelHeight));
+        this.setBackground(Color.GREEN);
+        this.setFocusable(true);
+        this.addKeyListener(this);
+
+        int pX = panelWidth / 2;
+        int pY = panelHeight / 2;
 
             player = new Player(pX, pY); // Player's position is at the center of the Panel
-            lions = new ArrayList<>();
-            bullets = new ArrayList<>();
+            lions = new ArrayList<Lion>(); //it is accepted to use ArrayList<>() because java compiler infer data type of Lion from context
+            bullets = new ArrayList<Bullet>(); //similarly, bullets = new ArrayList<>()
 
             // Spawn lions at regular intervals
-            Timer lionSpawner = new Timer(3000, e -> {
+            javax.swing.Timer lionSpawner = new javax.swing.Timer(3000, e -> {
                 if (!gameOver) lions.add(new Lion(panelWidth, panelHeight));
             });
             lionSpawner.start();
 
-            timer = new Timer(16, this); // 16 is time for rendering a single frame,so FPS is 1000/16(ms) = 60 FPS
+            timer = new javax.swing.Timer(16, this); // 16 is time for rendering a single frame,so FPS is 1000/16(ms) = 60 FPS
             timer.start();
         }
 
-    public void setRestartButton(JButton restartButton) {
+/*    public void setRestartButton(JButton restartButton) {
         this.restartButton = restartButton;
-    }
+    }*/
 
     public void restartGame() {
         score = 0;
         gameOver = false;
         lions.clear();
         bullets.clear();
-        restartButton.setVisible(false);
+        //restartButton.setVisible(false);
         requestFocusInWindow(); // GamePanel constructor is set Focusable, Refocus the panel for key inputs
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-            if(gameOver) {
-                restartButton.setVisible(true); // Make the button visible when the game is over.
-                return;
-            }
+            //if(gameOver) {
+            //    restartButton.setVisible(true); // Make the button visible when the game is over.
+            //    return;
+            //}
             // Update game state
             player.shoot(bullets);
             for (Lion lion : lions) lion.run();
@@ -119,7 +127,7 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
                     score += 10;
                 } else if (lion.huntPlayer(player)) {
                     gameOver = true;
-                    restartButton.setVisible(true);
+                    //restartButton.setVisible(true);
                 }
             }
 
@@ -140,8 +148,8 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
             if (gameOver) {
                 g.setColor(Color.RED);
                 g.setFont(new Font("Times New Roman", Font.BOLD, 40));
-                g.drawString("Game Over", pX-60, pY -50);
-                g.drawString("Score: " + score, pX-60, pY);
+                g.drawString("Game Over, Press R-Key to Restart", pX- (pX/2), pY -50);
+                g.drawString("Score: " + score, pX- (pX/2), pY);
             } else {
                 player.draw(g);
                 for (Lion lion : lions) lion.draw(g);
@@ -156,7 +164,10 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-            player.keyPressed(e);
+            if(e.getKeyCode() == KeyEvent.VK_R) restartGame();
+            else {
+                player.keyPressed(e);
+            }
         }
 
     @Override
@@ -174,6 +185,15 @@ class Player {
     private boolean shooting;
     private int shootCooldown = 0;
 
+    private static Image playerImage;
+
+    static{
+        try{ playerImage = ImageIO.read(new File("./Hunter.png"));
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public Player(int x, int y) {
             this.x = x;
             this.y = y;
@@ -190,20 +210,23 @@ class Player {
 
     public void draw(Graphics g) {
 
-            Graphics2D g2d = (Graphics2D) g; //casting Graphics2D inside of graphics as g
-            g2d.setColor(Color.BLUE);
-            // Translate and rotate for proper orientation
-            g2d.translate(x, y);
-            g2d.rotate(Math.toRadians(angle));
-            g2d.fillRect(-20, -10, 40, 20); // Rotating player
+        Graphics2D g2d = (Graphics2D) g; //casting Graphics2D inside of graphics as g
+        //g2d.setColor(Color.BLUE);
+        // Translate and rotate for proper orientation
+        AffineTransform orig = g2d.getTransform();
+        g2d.translate(x, y);
+        g2d.rotate(Math.toRadians(angle));
+        g2d.drawImage(playerImage, -playerImage.getWidth(null) / 2, -playerImage.getHeight(null) / 2, null);
+        //g2d.fillRect(-20, -10, 40, 20); // Rotating player
 
-            // Draw the triangle (front)
-            int[] xPoints = {25, 20, 20}; // Coordinates relative to (x, y)
-            int[] yPoints = {0, 10, -10};
-            g2d.fillPolygon(xPoints, yPoints, 3);
+        // Draw the triangle (front)
+        //int[] xPoints = {25, 20, 20}; // Coordinates relative to (x, y)
+        //int[] yPoints = {0, 10, -10};
+        //g2d.fillPolygon(xPoints, yPoints, 3);
+        g2d.setTransform(orig);
+        //g2d.rotate(-Math.toRadians(angle));
+        //g2d.translate(-x, -y);
 
-            g2d.rotate(-Math.toRadians(angle));
-            g2d.translate(-x, -y);
         }
 
 
@@ -227,9 +250,15 @@ class Bullet {
     private double angle; //status of bullet is saved as double to take radians for sin,cos of whizz
     private int speed = 10;
 
-    public Bullet(int x, int y, int angle) {
-        this.x = x;
-        this.y = y;
+    Dimension MS2 = Toolkit.getDefaultToolkit().getScreenSize();
+
+
+    private int bX = MS2.width / 2;
+    private int bY = MS2.height / 2 ;
+
+    public Bullet(int bX, int bY, int angle) {
+        this.x = bX;
+        this.y = bY;
         this.angle = Math.toRadians(angle); //converts int to double for radians
     }
 
@@ -239,7 +268,7 @@ class Bullet {
     }
 
     public boolean isBulletOnScreen() {
-        return x >= 0 && x <= 800 && y >= 0 && y <= 600;
+        return x >= 0 && x <= bX*2 && y >= 0 && y <= bY*2;
     }
 
     public Rectangle getBounds() {
@@ -260,6 +289,10 @@ class Lion {
     private int pX;
     private int pY;
 
+    Dimension MS = Toolkit.getDefaultToolkit().getScreenSize();
+    private int panelWidth = MS.width;
+    private int panelHeight = MS.height;
+
     static {
         try {
             lionImage = ImageIO.read(new File("./Lion.png"));
@@ -276,10 +309,10 @@ class Lion {
 
         if (Math.random() < 0.5) {
             x = (Math.random() < 0.5) ? 0 : panelWidth; // Left or right
-            y = (int) (Math.random() * 600);    // Random Y
+            y = (int) (Math.random() * panelHeight);    // Random Y
         } else {
             y = (Math.random() < 0.5) ? 0 : panelHeight; // Top or bottom
-            x = (int) (Math.random() * 800);    // Random X
+            x = (int) (Math.random() * panelWidth);    // Random X
         }
     }
 
@@ -309,7 +342,7 @@ class Lion {
     }
 
     public boolean isLionOffScreen() {
-        return hunted || (x < 0 || x > 800 || y < 0 || y > 600);
+        return hunted || (x < 0 || x > panelWidth || y < 0 || y > panelHeight);
     }
 
     public void draw(Graphics g) {
