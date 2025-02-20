@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'Initial_H', url: 'https://github.com/mivehk/CHA2DS2-VASc.git'
+                git branch: 'Initial_H', url: 'https://github.com/mivehk/ShootLions'
             }
         }
 
@@ -29,16 +29,16 @@ pipeline {
 
         stage('Package') {
             steps {
-                sh 'echo "Main-Class: chadsVascCalculatorGUI" > MANIFEST.MF'
+                sh 'echo "Main-Class: ShootLions" > MANIFEST.MF'
                 // Package compiled files into a JAR
-                sh 'jar cvfm cha2ds2-vasc.jar MANIFEST.MF -C out .'
+                sh 'jar cvfm shootlions2d-game.jar MANIFEST.MF -C out .'
             }
         }
 
         stage('Archive Artifacts') {
             steps {
                 // Archive the JAR file
-                archiveArtifacts artifacts: 'cha2ds2-vasc.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'shootlions2d-game.jar', allowEmptyArchive: true
             }
         }
     }
