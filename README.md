@@ -15,7 +15,26 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'Initial_H', url: 'https://github.com/mivehk/ShootLions'
+                sh 'rm -rf *'
+                sh 'git init'
+                sh '''
+                if git remote | grep -q ShootLions; then
+                    echo "Remote repo ShootLions alreaddy Exists"
+                else    
+                    git remote add ShootLions https://github.com/mivehk/ShootLions
+                fi
+                '''
+                sh 'git fetch --all'
+                    sh '''
+                    if git show-ref --verify --quiet refs/heads/Initial_H; then
+                        git checkout Initial_H
+                        git reset --hard ShootLions/Initial_H
+                        git pull ShootLions Initial_H:Initial_H
+                    else
+                        git checkout -b Initial_H ShootLions/Initial_H
+                        git pull ShootLions Initial_H:Initial_H
+                    fi
+                    '''
             }
         }
 
@@ -29,7 +48,14 @@ pipeline {
 
         stage('Package') {
             steps {
-                sh 'echo "Main-Class: ShootLions" > MANIFEST.MF'
+                sh '''
+                echo "Manifest-Version: 1.0" > MANIFEST.MF 
+                echo "Main-Class: ShootLions" >> MANIFEST.MF
+                echo "" >> MANIFEST.MF
+
+                cp -r src/resources/*.png out/
+
+                '''
                 // Package compiled files into a JAR
                 sh 'jar cvfm shootlions2d-game.jar MANIFEST.MF -C out .'
             }

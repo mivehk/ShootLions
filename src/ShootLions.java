@@ -200,7 +200,7 @@ class Player {
 
     static{
         try{
-            playerImage = ImageIO.read(Player.class.getResourceAsStream("Hunter.png"));
+            playerImage = ImageIO.read(Player.class.getResourceAsStream("/Hunter.png"));
             if (playerImage == null) throw new IOException("Player image not found in resources folder!");
         }catch(IOException er){
             er.printStackTrace();
@@ -316,7 +316,7 @@ class Lion {
 
     static{
         try{
-            lionImage = ImageIO.read(Lion.class.getResourceAsStream("Lion.png"));
+            lionImage = ImageIO.read(Lion.class.getResourceAsStream("/Lion.png"));
             if (lionImage == null) throw new IOException("Lion image not found in resources folder!");
         } catch( IOException e){
             e.printStackTrace();
