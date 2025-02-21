@@ -109,6 +109,7 @@ class GamePanel extends JPanel implements ActionListener, KeyListener {
         bullets.clear();
         //restartButton.setVisible(false);
         requestFocusInWindow(); // GamePanel constructor is set Focusable, Refocus the panel for key inputs
+        repaint();
     }
 
     @Override
@@ -187,13 +188,23 @@ class Player {
 
     private static Image playerImage;
 
-    static{
+    //Ran into a problem with Jenkins pipeline to package game with image, so
+    /*static{
         try{ playerImage = ImageIO.read(new File("./Hunter.png"));
         }catch(IOException e){
             e.printStackTrace();
         }
-    }
+    }*/
 
+
+
+    static{
+        try{
+            playerImage = ImageIO.read(Player.class.getResourceAsStream("Hunter.png"));
+            if (playerImage == null) throw new IOException("Player image not found in resources folder!");
+        }catch(IOException er){
+            er.printStackTrace();
+        }}
     public Player(int x, int y) {
             this.x = x;
             this.y = y;
@@ -293,7 +304,7 @@ class Lion {
     private int panelWidth = MS.width;
     private int panelHeight = MS.height;
 
-    static {
+    /*static {
         try {
             lionImage = ImageIO.read(new File("./Lion.png"));
             //lionImage = ImageIO.read(getClass().getResource("/Lion2.png"));
@@ -301,7 +312,16 @@ class Lion {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
+
+    static{
+        try{
+            lionImage = ImageIO.read(Lion.class.getResourceAsStream("Lion.png"));
+            if (lionImage == null) throw new IOException("Lion image not found in resources folder!");
+        } catch( IOException e){
+            e.printStackTrace();
+    }}
+
 
     public Lion(int panelWidth, int panelHeight) {
         this.pX = panelWidth / 2;
